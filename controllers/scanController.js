@@ -1,6 +1,6 @@
 const Child = require("../models/Child");
 const ScanLog = require("../models/ScanLog");
-const mailQueue = require("../jobs/mailWorker");
+const mailQueue = require("../queues/mailQueue");
 const { handleValidation } = require("../utils/validators");
 
 
