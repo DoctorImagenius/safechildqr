@@ -5,7 +5,8 @@ const { scanParamValidationRules } = require("../validationRules/scanRules");
 const { scanRateLimiter } = require("../middlewares/rateLimiter");
 
 
-router.get("/:code",scanRateLimiter ,scanParamValidationRules, scan);
+// router.get("/:code",scanRateLimiter ,scanParamValidationRules, scan);
+router.get("/:code" ,scanParamValidationRules, scan);  // for testing
 
 
 module.exports = router;
