@@ -21,7 +21,7 @@ const getRealIP = (req) => {
 
 async function getLocation(ip) {
     try {
-        ip = getRealIP(req);
+        ip = getRealIP(ip);
         const res = await axios.get(`https://ipapi.co/${ip}/json/`);
         const { city, region, country_name, latitude, longitude, org } = res.data;
         return { city, region, country_name, latitude, longitude, org };
