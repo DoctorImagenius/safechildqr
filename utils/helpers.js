@@ -5,7 +5,8 @@ const emailCooldown = new Map();
 const canSendEmail = (ip) => {
     const now = Date.now();
     const lastSent = emailCooldown.get(ip);
-    if (lastSent && now - lastSent < 60 * 1000) {
+    if (lastSent && now - lastSent < 30000) { // 60 se 30 kar diya
+        console.log(`Email blocked - only ${Math.floor((now - lastSent)/1000)}s ago`);
         return false;
     }
     emailCooldown.set(ip, now);

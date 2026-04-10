@@ -36,11 +36,9 @@ const scan = async (req, res, next) => {
             parent: child.parent._id,
             ipAddress: req.ip,
             deviceInfo: req.headers["user-agent"] || "Unknown",
-        }).catch(err =>
-            console.error("ScanLog error:", err.message)
-        );
+        }).catch(err => console.error("ScanLog error:", err.message));
 
-        sendEmail(child, req);
+        sendEmail(child, req).catch(err => console.error("Email error:", err.message));
 
     } catch (err) {
         next(err);
