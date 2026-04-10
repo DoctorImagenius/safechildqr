@@ -8,20 +8,23 @@ const sanitizeParent = (parent) => {
     return obj;
 };
 
-const getRealIP = (req) => {
-    const forwarded = req.headers["x-forwarded-for"];
+// const getRealIP = (req) => {
+//     const forwarded = req.headers["x-forwarded-for"];
 
-    let ip = forwarded
-        ? forwarded.split(",")[0]
-        : req.ip;
-    ip = ip.split(":").pop();
+//     let ip = forwarded
+//         ? forwarded.split(",")[0]
+//         : req.ip;
+//     ip = ip.split(":").pop();
 
-    return ip;
-};
+//     return ip;
+// };
 
 async function getLocation(ip) {
     try {
-        ip = getRealIP(ip);
+        // ip = getRealIP(ip);
+        console.log("IP addredd:", ip);
+        ip = ip.split(":").pop();
+        console.log("Processed IP:", ip);
         const res = await axios.get(`https://ipapi.co/${ip}/json/`);
         const { city, region, country_name, latitude, longitude, org } = res.data;
         return { city, region, country_name, latitude, longitude, org };
