@@ -22,8 +22,8 @@ const sanitizeParent = (parent) => {
 async function getLocation(ip) {
     try {
         // ip = getRealIP(ip);
-        console.log("IP addredd:", ip);
-        ip = ip.split(":").pop()[0];
+        console.log("IP addredd with port:", ip);
+        ip = ip.split(":")[0];
         console.log("Processed IP:", ip);
         const res = await axios.get(`https://ipapi.co/${ip}/json/`);
         const { city, region, country_name, latitude, longitude, org } = res.data;
