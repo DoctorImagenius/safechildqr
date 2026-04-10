@@ -1,34 +1,8 @@
 const Child = require("../models/Child");
 const ScanLog = require("../models/ScanLog");
 const { handleValidation } = require("../utils/validators");
-const { transporter, generateEmailHTML, getLocation } = require("../utils/helpers");
+const { sendEmail } = require("../utils/helpers");
 
-
-const sendEmail = async (child, req) => {
-    try {
-        const time = new Date().toUTCString();
-        const location = await getLocation(req.ip);
-
-        const html = generateEmailHTML({
-            childName: child.name,
-            ip: req.ip,
-            time,
-            location : location || "Unknown",
-            deviceInfo: req.headers["user-agent"] || "Unknown"
-        });
-
-        await transporter.sendMail({
-            from: `"SafeChildQR 🚨" <${process.env.EMAIL_USER}>`,
-            to: child.parent.email,
-            subject: "🚨 SafeChildQR Alert",
-            html,
-        });
-
-        console.log("Email sent to:", child.parent.email);
-    } catch (err) {
-        console.error("Email error:", err.message);
-    }
-};
 
 const scan = async (req, res, next) => {
     try {

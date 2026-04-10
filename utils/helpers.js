@@ -1,6 +1,16 @@
 const axios = require("axios");
 const nodemailer = require("nodemailer");
+const emailCooldown = new Map();
 
+const canSendEmail = (ip) => {
+    const now = Date.now();
+    const lastSent = emailCooldown.get(ip);
+    if (lastSent && now - lastSent < 60 * 1000) {
+        return false;
+    }
+    emailCooldown.set(ip, now);
+    return true;
+};
 
 const sanitizeParent = (parent) => {
     const obj = parent.toObject();
@@ -99,10 +109,46 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+const sendEmail = async (child, req) => {
+    try {
+        const ip = req.ip;
+
+        if (!canSendEmail(ip)) {
+            console.log("Email skipped (cooldown active for IP):", ip);
+            return;
+        }
+
+        const time = new Date().toUTCString();
+        const location = await getLocation(ip);
+
+        const html = generateEmailHTML({
+            childName: child.name,
+            ip,
+            time,
+            location: location || "Unknown",
+            deviceInfo: req.headers["user-agent"] || "Unknown"
+        });
+
+        await transporter.sendMail({
+            from: `"SafeChildQR 🚨" <${process.env.EMAIL_USER}>`,
+            to: child.parent.email,
+            subject: "🚨 SafeChildQR Alert",
+            html,
+        });
+
+        console.log("Email sent to:", child.parent.email);
+
+    } catch (err) {
+        console.error("Email error:", err.message);
+    }
+};
+
 
 module.exports = {
     sanitizeParent,
     getLocation,
     generateEmailHTML,
-    transporter
+    transporter,
+    canSendEmail,
+    sendEmail
 }
