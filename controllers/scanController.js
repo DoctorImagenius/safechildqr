@@ -4,6 +4,28 @@ const mailQueue = require("../queues/mailQueue");
 const { handleValidation } = require("../utils/validators");
 
 
+const queueScanSideEffects = async (child, req) => {
+    try {
+        await Promise.race([
+            mailQueue.add("sendEmail", {
+                email: child.parent.email,
+                childName: child.name,
+                ip: req.ip,
+                deviceInfo: req.headers["user-agent"]
+            }, {
+                attempts: 3,
+                backoff: 5000
+            }),
+            new Promise((_, reject) => {
+                setTimeout(() => reject(new Error("Mail queue timed out")), 2000);
+            })
+        ]);
+    } catch (err) {
+        console.error("Failed to queue scan email:", err.message);
+    }
+};
+
+
 const scan = async (req, res, next) => {
     try {
         handleValidation(req);
@@ -26,17 +48,6 @@ const scan = async (req, res, next) => {
             deviceInfo: req.headers["user-agent"],
         });
 
-        await mailQueue.add("sendEmail", {
-            email: child.parent.email,
-            childName: child.name,
-            ip: req.ip,
-            deviceInfo: req.headers["user-agent"]
-            // deviceInfo: "Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.199 Mobile Safari/537.36"  // for test
-        }, {
-            attempts: 3,
-            backoff: 5000
-        });
-
         res.json({
             child: {
                 name: child.name || "Unnamed",
@@ -48,6 +59,7 @@ const scan = async (req, res, next) => {
                 emergencyNumber: child.parent.emergencyNumber
             }
         });
+        queueScanSideEffects(child, req);
     } catch (err) {
         next(err);
     }

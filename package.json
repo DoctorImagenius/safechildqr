@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
   "test": "exit 0 ",
-    "start": "node server.js"
+    "start": "node server.js",
+    "worker": "node jobs/mailWorker.js"
   },
   "keywords": [],
   "author": "",
