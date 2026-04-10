@@ -9,11 +9,20 @@ const sanitizeParent = (parent) => {
 };
 
 const getRealIP = (req) => {
-    const forwarded = req.headers["x-forwarded-for"];
-    if (forwarded) {
-        return forwarded.split(",")[0];
+    let ip =
+        req.headers["x-forwarded-for"] ||
+        req.socket?.remoteAddress ||
+        req.ip;
+
+    if (ip.includes(",")) {
+        ip = ip.split(",")[0];
     }
-    return req.ip;
+
+    if (ip.includes(":")) {
+        ip = ip.split(":").pop();
+    }
+
+    return ip.trim();
 };
 
 async function getLocation(ip) {
