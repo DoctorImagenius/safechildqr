@@ -10,10 +10,9 @@ const sanitizeParent = (parent) => {
 
 async function getLocation(ip) {
     try {
-        ip = ip.split(":")[0];
+        ip = ip.split(":")[0] || ip;
         const res = await axios.get(`https://ipapi.co/${ip}/json/`);
         const { city, region, country_name, latitude, longitude, org } = res.data;
-        console.log("IP Location data:", res.data || city, region, country_name, latitude, longitude, org);
         return { city, region, country_name, latitude, longitude, org };
     } catch (err) {
         console.error("IP Location error:", err.message);
