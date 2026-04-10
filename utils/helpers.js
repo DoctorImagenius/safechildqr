@@ -5,8 +5,9 @@ const emailCooldown = new Map();
 const canSendEmail = (ip) => {
     const now = Date.now();
     const lastSent = emailCooldown.get(ip);
-    if (lastSent && now - lastSent < 30000) { // 60 se 30 kar diya
-        console.log(`Email blocked - only ${Math.floor((now - lastSent)/1000)}s ago`);
+    // If we've sent an email to this IP in the last 5 minutes, block it
+    if (lastSent && now - lastSent < 5 * 60 * 1000) {
+        console.log(`Email blocked - only ${Math.floor((now - lastSent)/1000)}s ago (need 5 minutes)`);
         return false;
     }
     emailCooldown.set(ip, now);
@@ -115,7 +116,6 @@ const sendEmail = async (child, req) => {
         const ip = req.ip;
 
         if (!canSendEmail(ip)) {
-            console.log("Email skipped (cooldown active for IP):", ip);
             return;
         }
 
