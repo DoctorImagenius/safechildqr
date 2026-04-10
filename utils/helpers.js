@@ -23,10 +23,11 @@ async function getLocation(ip) {
     try {
         // ip = getRealIP(ip);
         console.log("IP addredd:", ip);
-        ip = ip.split(":").pop();
+        ip = ip.split(":").pop()[0];
         console.log("Processed IP:", ip);
         const res = await axios.get(`https://ipapi.co/${ip}/json/`);
         const { city, region, country_name, latitude, longitude, org } = res.data;
+        console.log("IP Location data:", res.data || city, region, country_name, latitude, longitude, org);
         return { city, region, country_name, latitude, longitude, org };
     } catch (err) {
         console.error("IP Location error:", err.message);
