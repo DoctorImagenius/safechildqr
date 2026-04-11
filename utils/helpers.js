@@ -9,17 +9,21 @@ const getClientIP = (req) => {
         .split(":")[0];
 };
 
-const canSendEmail = (ip) => {
+const canSendEmail = (ip, childId) => {
+    const key = `${ip}_${childId}`;
     const now = Date.now();
-    const lastSent = emailCooldown.get(ip);
-    if (lastSent && now - lastSent < 5 * 60 * 1000) {
-        console.log(`Email blocked - only ${Math.floor((now - lastSent) / 1000)}s ago (need 5 minutes)`);
+
+    const lastSent = emailCooldown.get(key);
+
+    if (lastSent && now - lastSent > 5 * 60 * 1000) {
+        emailCooldown.delete(key);
+    }
+
+    if (emailCooldown.has(key)) {
         return false;
     }
-    emailCooldown.set(ip, now);
-    setTimeout(() => {
-        emailCooldown.delete(ip);
-    }, 5 * 60 * 1000);
+
+    emailCooldown.set(key, now);
     return true;
 };
 
@@ -133,7 +137,7 @@ const sendEmail = async (child, req) => {
             return;
         }
 
-        if (!canSendEmail(ip)) {
+        if (!canSendEmail(ip, child._id)) {
             return;
         }
 
