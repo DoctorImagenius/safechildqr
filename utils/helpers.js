@@ -2,16 +2,29 @@ const axios = require("axios");
 const nodemailer = require("nodemailer");
 const emailCooldown = new Map();
 
+
+const getClientIP = (req) => {
+    return (req.headers["x-forwarded-for"] || req.ip || "")
+        .split(",")[0]
+        .split(":")[0];
+};
+
 const canSendEmail = (ip) => {
     const now = Date.now();
     const lastSent = emailCooldown.get(ip);
-    // If we've sent an email to this IP in the last 5 minutes, block it
     if (lastSent && now - lastSent < 5 * 60 * 1000) {
-        console.log(`Email blocked - only ${Math.floor((now - lastSent)/1000)}s ago (need 5 minutes)`);
+        console.log(`Email blocked - only ${Math.floor((now - lastSent) / 1000)}s ago (need 5 minutes)`);
         return false;
     }
     emailCooldown.set(ip, now);
+    setTimeout(() => {
+        emailCooldown.delete(ip);
+    }, 5 * 60 * 1000);
     return true;
+};
+
+const isBot = (userAgent) => {
+    return /bot|crawl|spider|slurp|google/i.test(userAgent);
 };
 
 const sanitizeParent = (parent) => {
@@ -22,7 +35,6 @@ const sanitizeParent = (parent) => {
 
 async function getLocation(ip) {
     try {
-        ip = ip.split(":")[0] || ip;
         const res = await axios.get(`https://ipapi.co/${ip}/json/`);
         const { city, region, country_name, latitude, longitude, org } = res.data;
         return { city, region, country_name, latitude, longitude, org };
@@ -113,7 +125,13 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = async (child, req) => {
     try {
-        const ip = req.ip;
+        const ip = getClientIP(req);
+
+        const userAgent = req.headers["user-agent"] || "";
+
+        if (isBot(userAgent) || userAgent.includes("Google-Read-Aloud")) {
+            return;
+        }
 
         if (!canSendEmail(ip)) {
             return;
