@@ -28,7 +28,8 @@ const canSendEmail = (ip, childId) => {
 };
 
 const isBot = (userAgent) => {
-    return /bot|crawl|spider|slurp|google/i.test(userAgent);
+    const botPatterns = /bot|crawl|spider|slurp|google|bing|yahoo|duckduck|baidu|yandex|facebookexternalhit|twitterbot|whatsapp|telegram/i;
+    return botPatterns.test(userAgent);
 };
 
 const sanitizeParent = (parent) => {
